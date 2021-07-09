@@ -137,6 +137,7 @@ def calculate_fitness(childkey, CT_numbers, probabilities, autokey, current_inte
         MT = decryption_autokey(childkey, CT_numbers, current_interrupter)
     else:
         MT = decryption_vigenere(childkey, CT_numbers, current_interrupter)
+        #MT = Garrodactyl(childkey, CT_numbers, current_interrupter)
 
     if reversed_text:
         MT = MT[::-1]
@@ -157,47 +158,18 @@ def translate_to_english(parent_key):
     return translation
 
 
-def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey, reversed_text):
-    current_interrupter = interrupters[counting]
-    best_score_ever = -100000.0
-    best_key_ever = []
-    for key_length in range(51, 101):
-        parent_key = np.random.randint(28, size=key_length)
-        parent_key[0] = 0
-        parent_score = calculate_fitness(parent_key, CT_numbers, probabilities, autokey,
-                                         current_interrupter, reversed_text)
-
-        still_improving = True
-
-        while still_improving:
-            for index in range(len(parent_key)):
-                childkey = np.zeros((29, len(parent_key)), dtype=int)
-
-                for jj in range(0, 29):
-                    childkey[jj, :] = parent_key
-
-                scores = np.zeros(29)
-
-                for jj in range(0, 29):
-                    childkey[jj, index] = jj
-
-                for k in range(0, 29):
-                    scores[k] = calculate_fitness(childkey[k, :], CT_numbers, probabilities,
-                                                  autokey, current_interrupter, reversed_text)
-
-                best_children_score = np.max(scores)
-
-                if best_children_score > parent_score:
-                    k = np.where(scores == best_children_score)
-                    parent_key = childkey[k[0][0], :]
-                    parent_score = best_children_score
-
-            if parent_score > best_score_ever:
-                best_score_ever = parent_score
-                best_key_ever = parent_key
+def Garrodactyl(key, CT_numbers, current_interrupter):
+    MT = np.copy(CT_numbers)
+    length_key = len(key)
+    counter = 0
+    for index in range(len(CT_numbers)):
+        if current_interrupter[index]:
+            continue
+        else:
+            interim = CT_numbers[index] + key[counter % length_key]
+            if interim == 0:
+                MT[index] = 0
             else:
-                still_improving = False
-    print(counting)
-    return (best_score_ever, len(best_key_ever),
-            translate_to_english(decryption_vigenere(best_key_ever, CT_numbers, current_interrupter)), best_key_ever,
-            translate_to_english(best_key_ever))
+                MT[index] = totient(interim) % 29
+            counter += 1
+    return MT

@@ -1,17 +1,23 @@
 import numpy as np
 import helper_functions as hpf
 import lp_text
-# import cProfile, pstats
 import timeit
+import multiprocessing as mp
 
 
-def main():
+def collect_results(result):
+    global best_keys
+    best_keys.add(result)
+
+
+if __name__ == '__main__':
+    pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
-    autokey = True
-    reversed_text = True
-    use_totient = True
-    use_primes = True
-    add_shift = True
+    autokey = False
+    reversed_text = False
+    use_totient = False
+    use_primes = False
+    add_shift = False
     reverse_gematria = False
 
     CT_numbers = lp_text.get_54_text()
@@ -43,45 +49,12 @@ def main():
     best_keys = hpf.best_key_storage()
 
     for counting in range(pow(2, number_of_interrupters)):
-        current_interrupter = interrupters[counting]
-        for key_length in range(8, 17):
-            parent_key = np.random.randint(28, size=key_length)
-            parent_score = hpf.calculate_fitness(parent_key, CT_numbers, probabilities, autokey,
-                                                 current_interrupter, reversed_text)
-            best_score_ever = parent_score
-            still_improving = True
+        pool.apply_async(hpf.finding_keys,
+                         args=(counting, interrupters, CT_numbers, probabilities, autokey, reversed_text),
+                         callback=collect_results)
 
-            while still_improving:
-                for index in range(len(parent_key)):
-                    childkey = np.zeros((29, len(parent_key)), dtype=int)
-
-                    for jj in range(0, 29):
-                        childkey[jj, :] = parent_key
-
-                    scores = np.zeros(29)
-
-                    for jj in range(0, 29):
-                        childkey[jj, index] = jj
-
-                    for k in range(0, 29):
-                        scores[k] = hpf.calculate_fitness(childkey[k, :], CT_numbers, probabilities,
-                                                          autokey, current_interrupter, reversed_text)
-
-                    best_children_score = np.max(scores)
-
-                    if best_children_score > parent_score:
-                        k = np.where(scores == best_children_score)
-                        parent_key = childkey[k[0][0], :]
-                        parent_score = best_children_score
-
-                if parent_score > best_score_ever:
-                    best_score_ever = parent_score
-                else:
-                    still_improving = False
-                    Translation = hpf.translate_to_english(
-                        hpf.decryption_vigenere(parent_key, CT_numbers, current_interrupter))
-                    best_keys.add((best_score_ever, parent_key, Translation))
-        print(counting)
+    pool.close()
+    pool.join()
 
     f = open('keys.txt', 'w')
     for t in best_keys.store:
@@ -92,8 +65,6 @@ def main():
 
     print('Time: ', stop - start)
 
-
-main()
 # if __name__ == '__main__':
 #    profiler = cProfile.Profile()
 #    profiler.enable()
