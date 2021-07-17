@@ -14,14 +14,15 @@ if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
     # Vigenere, Autokey, Autokey Ciphertext
-    algorithm = 0
+    algorithm = 1
     reversed_text = False
-    use_totient = False
-    use_primes = False
+    totient_shift = False
+    prime_shift = True
     add_shift = False
+    index_shift=False
     reverse_gematria = True
 
-    CT_numbers = lp_text.get_54_text()
+    CT_numbers = lp_text.get_hollow_text()
 
     interrupter = 0
     CT_interrupters = np.int8((CT_numbers == interrupter))
@@ -31,8 +32,8 @@ if __name__ == '__main__':
     if reversed_text:
         CT_numbers = CT_numbers[::-1]
 
-    if use_totient:
-        CT_numbers = hpf.totient_shift(CT_numbers, use_primes, add_shift)
+    if totient_shift or prime_shift or index_shift:
+        CT_numbers = hpf.apply_shift(CT_numbers, prime_shift, totient_shift, index_shift, add_shift)
 
     quadgrams, probabilities = hpf.read_data_from_file("new_quadgrams.txt")
     if reverse_gematria:
@@ -47,7 +48,7 @@ if __name__ == '__main__':
         my_dude[my_dude == 1] = np.array(list(bit_rep))
         interrupters[index] = my_dude
 
-    best_keys = hpf.best_key_storage()
+    best_keys = hpf.BestKeyStorage()
 
     for counting in range(pow(2, number_of_interrupters)):
         pool.apply_async(hpf.finding_keys,

@@ -1,76 +1,34 @@
 import numpy as np
 from sympy.ntheory.factor_ import totient
+from sympy import prime
 
 
-def totient_shift(CT_numbers, use_primes, add_shift):
-    primes = np.array([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
-                       37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
-                       79, 83, 89, 97, 101, 103, 107, 109, 113,
-                       127, 131, 137, 139, 149, 151, 157, 163,
-                       167, 173, 179, 181, 191, 193, 197, 199,
-                       211, 223, 227, 229, 233, 239, 241, 251,
-                       257, 263, 269, 271, 277, 281, 283, 293,
-                       307, 311, 313, 317, 331, 337, 347, 349, 353,
-                       359, 367, 373, 379, 383, 389, 397, 401, 409,
-                       419, 421, 431, 433, 439, 443, 449, 457, 461,
-                       463, 467, 479, 487, 491, 499, 503, 509, 521,
-                       523, 541, 547, 557, 563, 569, 571, 577, 587,
-                       593, 599, 601, 607, 613, 617, 619, 631, 641,
-                       643, 647, 653, 659, 661, 673, 677, 683, 691,
-                       701, 709, 719, 727, 733, 739, 743, 751, 757,
-                       761, 769, 773, 787, 797, 809, 811, 821, 823,
-                       827, 829, 839, 853, 857, 859, 863, 877, 881,
-                       883, 887, 907, 911, 919, 929, 937, 941, 947,
-                       953, 967, 971, 977, 983, 991, 997, 1009, 1013,
-                       1019, 1021, 1031, 1033, 1039, 1049, 1051, 1061, 1063,
-                       1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117, 1123,
-                       1129, 1151, 1153, 1163, 1171, 1181, 1187, 1193, 1201,
-                       1213, 1217, 1223, 1229, 1231, 1237, 1249, 1259, 1277,
-                       1279, 1283, 1289, 1291, 1297, 1301, 1303, 1307, 1319,
-                       1321, 1327, 1361, 1367, 1373, 1381, 1399, 1409, 1423,
-                       1427, 1429, 1433, 1439, 1447, 1451, 1453, 1459, 1471,
-                       1481, 1483, 1487, 1489, 1493, 1499, 1511, 1523, 1531,
-                       1543, 1549, 1553, 1559, 1567, 1571, 1579, 1583, 1597,
-                       1601, 1607, 1609, 1613, 1619, 1621, 1627, 1637, 1657,
-                       1663, 1667, 1669, 1693, 1697, 1699, 1709, 1721, 1723,
-                       1733, 1741, 1747, 1753, 1759, 1777, 1783, 1787, 1789,
-                       1801, 1811, 1823, 1831, 1847, 1861, 1867, 1871, 1873,
-                       1877, 1879, 1889, 1901, 1907, 1913, 1931, 1933, 1949,
-                       1951, 1973, 1979, 1987, 1993, 1997, 1999, 2003, 2011,
-                       2017, 2027, 2029, 2039, 2053, 2063, 2069, 2081, 2083,
-                       2087, 2089, 2099, 2111, 2113, 2129, 2131, 2137, 2141,
-                       2143, 2153, 2161, 2179, 2203, 2207, 2213, 2221, 2237,
-                       2239, 2243, 2251, 2267, 2269, 2273, 2281, 2287, 2293,
-                       2297, 2309, 2311, 2333, 2339, 2341, 2347, 2351, 2357,
-                       2371, 2377, 2381, 2383, 2389, 2393, 2399, 2411, 2417,
-                       2423, 2437, 2441, 2447, 2459, 2467, 2473, 2477, 2503,
-                       2521, 2531, 2539, 2543, 2549, 2551, 2557, 2579, 2591,
-                       2593, 2609, 2617, 2621, 2633, 2647, 2657, 2659, 2663,
-                       2671, 2677, 2683, 2687, 2689, 2693, 2699, 2707, 2711,
-                       2713, 2719, 2729, 2731, 2741, 2749, 2753, 2767, 2777,
-                       2789, 2791, 2797, 2801, 2803, 2819, 2833, 2837, 2843,
-                       2851, 2857, 2861, 2879, 2887, 2897, 2903, 2909, 2917,
-                       2927, 2939, 2953, 2957, 2963, 2969, 2971, 2999, 3001,
-                       3011, 3019, 3023, 3037, 3041, 3049, 3061, 3067, 3079,
-                       3083, 3089, 3109, 3119, 3121, 3137, 3163, 3167, 3169,
-                       3181, 3187, 3191, 3203, 3209, 3217, 3221, 3229, 3251,
-                       3253, 3257, 3259, 3271, 3299, 3301])
-    if add_shift and use_primes:
-        for index in range(len(CT_numbers)):
-            CT_numbers[index] += totient(primes[index])
-    if not add_shift and use_primes:
-        for index in range(len(CT_numbers)):
-            CT_numbers[index] -= totient(primes[index])
-    if add_shift and not use_primes:
-        for index in range(len(CT_numbers)):
-            CT_numbers[index] += index
-    if not add_shift and not use_primes:
-        for index in range(len(CT_numbers)):
-            CT_numbers[index] -= index
-    return np.remainder(CT_numbers, 29)
+def apply_shift(ct_numbers, prime_shift, totient_shift, index_shift, add_shift):
+    if totient_shift:
+        if add_shift:
+            for index in range(len(ct_numbers)):
+                ct_numbers[index] += totient(prime(index+1))
+        else:
+            for index in range(len(ct_numbers)):
+                ct_numbers[index] -= totient(prime(index+1))
+    if prime_shift:
+        if add_shift:
+            for index in range(len(ct_numbers)):
+                ct_numbers[index] += prime(index+1)
+        else:
+            for index in range(len(ct_numbers)):
+                ct_numbers[index] -= prime(index+1)
+    if index_shift:
+        if add_shift:
+            for index in range(len(ct_numbers)):
+                ct_numbers[index] += index
+        else:
+            for index in range(len(ct_numbers)):
+                ct_numbers[index] -= index
+    return np.remainder(ct_numbers, 29)
 
 
-class best_key_storage:
+class BestKeyStorage:
     def __init__(self):
         self.store = []
         self.N = 1000
@@ -94,8 +52,8 @@ def read_data_from_file(file_name):
     return ints, probabilities
 
 
-def decryption_autokey(key, CT_numbers, current_interrupter):
-    MT = np.copy(CT_numbers)
+def decryption_autokey(key, ct_numbers, current_interrupter):
+    mt = np.copy(ct_numbers)
     counter = 0
     index = 0
     while counter < len(key):
@@ -103,53 +61,57 @@ def decryption_autokey(key, CT_numbers, current_interrupter):
             index += 1
             continue
         else:
-            MT[index] = (MT[index] - key[counter]) % 29
+            mt[index] = (mt[index] - key[counter]) % 29
             index += 1
             counter += 1
 
     position = 0
 
-    for i in range(index, len(CT_numbers)):
+    for i in range(index, len(ct_numbers)):
         if current_interrupter[i] == 1:
             continue
         else:
-            MT[i] = (CT_numbers[i] - MT[position]) % 29
+            mt[i] = (ct_numbers[i] - mt[position]) % 29
             position += 1
 
-    return MT
+    return mt
 
 
-def decryption_vigenere(key, CT_numbers, current_interrupter):
-    MT = np.copy(CT_numbers)
+def decryption_vigenere(key, ct_numbers, current_interrupter):
+    mt = np.copy(ct_numbers)
     length_key = len(key)
     counter = 0
-    for index in range(len(CT_numbers)):
+    for index in range(len(ct_numbers)):
         if current_interrupter[index]:
             continue
         else:
-            MT[index] = (CT_numbers[index] - key[counter % length_key]) % 29
+            mt[index] = (ct_numbers[index] - key[counter % length_key]) % 29
             counter += 1
-    return MT
+    return mt
 
 
-def decryption_autokey_ciphertext(childkey, CT_numbers, current_interrupter):
-    key_text = np.concatenate((childkey, CT_numbers[0:(len(CT_numbers) - len(childkey))]))
-    return np.subtract(CT_numbers, key_text) % 29
+def decryption_autokey_ciphertext(childkey, ct_numbers, current_interrupter):
+    key_text = np.concatenate((childkey, ct_numbers[0:(len(ct_numbers) - len(childkey))]))
+    return np.subtract(ct_numbers, key_text) % 29
 
 
-def calculate_fitness(childkey, CT_numbers, probabilities, algorithm, current_interrupter, reversed_text):
+def calculate_fitness(childkey, ct_numbers, probabilities, algorithm, current_interrupter, reversed_text):
+    mt = None
     if algorithm == 0:
-        MT = decryption_vigenere(childkey, CT_numbers, current_interrupter)
+        mt = decryption_vigenere(childkey, ct_numbers, current_interrupter)
     if algorithm == 1:
-        MT = decryption_autokey(childkey, CT_numbers, current_interrupter)
+        mt = decryption_autokey(childkey, ct_numbers, current_interrupter)
     if algorithm == 2:
-        MT = decryption_autokey_ciphertext(childkey, CT_numbers, current_interrupter)
-    if reversed_text:
-        MT = MT[::-1]
+        mt = decryption_autokey_ciphertext(childkey, ct_numbers, current_interrupter)
+    if mt is None:
+        raise AssertionError()
 
-    indices = np.zeros(((len(MT) - 3),), dtype=int)
-    for k in range(len(MT) - 3):
-        indices[k] = MT[k] * (29 ** 3) + MT[k + 1] * (29 ** 2) + MT[k + 2] * 29 + MT[k + 3]
+    if reversed_text:
+        mt = mt[::-1]
+
+    indices = np.zeros(((len(mt) - 3),), dtype=int)
+    for k in range(len(mt) - 3):
+        indices[k] = mt[k] * (29 ** 3) + mt[k + 1] * (29 ** 2) + mt[k + 2] * 29 + mt[k + 3]
 
     return np.sum(probabilities[indices])
 
@@ -165,25 +127,25 @@ def translate_to_english(parent_key, reverse_gematria):
     return translation
 
 
-def translate_best_text(algorithm, best_key_ever, CT_numbers, current_interrupter, reverse_gematria):
+def translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupter, reverse_gematria):
     if algorithm == 0:
-        return translate_to_english(decryption_vigenere(best_key_ever, CT_numbers, current_interrupter), reverse_gematria)
+        return translate_to_english(decryption_vigenere(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
     if algorithm == 1:
-        return translate_to_english(decryption_autokey(best_key_ever, CT_numbers, current_interrupter), reverse_gematria)
+        return translate_to_english(decryption_autokey(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
     if algorithm == 2:
-        return translate_to_english(decryption_autokey_ciphertext(best_key_ever, CT_numbers, current_interrupter), reverse_gematria)
+        return translate_to_english(decryption_autokey_ciphertext(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
     else:
         print('Invlaid algorithm ID')
 
 
-def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey_ID, reversed_text, reverse_gematria):
+def finding_keys(counting, interrupters, ct_numbers, probabilities, autokey_id, reversed_text, reverse_gematria):
     current_interrupter = interrupters[counting]
     best_score_ever = -100000.0
     best_key_ever = []
     for key_length in range(1, 16):
         parent_key = np.random.randint(28, size=key_length)
         parent_key[0] = 0
-        parent_score = calculate_fitness(parent_key, CT_numbers, probabilities, autokey_ID,
+        parent_score = calculate_fitness(parent_key, ct_numbers, probabilities, autokey_id,
                                          current_interrupter, reversed_text)
 
         still_improving = True
@@ -201,8 +163,8 @@ def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey_ID, 
                     childkey[jj, index] = jj
 
                 for k in range(0, 29):
-                    scores[k] = calculate_fitness(childkey[k, :], CT_numbers, probabilities,
-                                                  autokey_ID, current_interrupter, reversed_text)
+                    scores[k] = calculate_fitness(childkey[k, :], ct_numbers, probabilities,
+                                                  autokey_id, current_interrupter, reversed_text)
 
                 best_children_score = np.max(scores)
 
@@ -218,5 +180,5 @@ def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey_ID, 
                 still_improving = False
     print(counting)
     return (best_score_ever, len(best_key_ever),
-            translate_best_text(autokey_ID, best_key_ever, CT_numbers, current_interrupter, reverse_gematria), best_key_ever,
+            translate_best_text(autokey_id, best_key_ever, ct_numbers, current_interrupter, reverse_gematria), best_key_ever,
             translate_to_english(best_key_ever, reverse_gematria))
