@@ -13,12 +13,13 @@ def collect_results(result):
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
-    autokey = False
+    # Vigenere, Autokey, Autokey Ciphertext
+    algorithm = 0
     reversed_text = False
     use_totient = False
     use_primes = False
     add_shift = False
-    reverse_gematria = False
+    reverse_gematria = True
 
     CT_numbers = lp_text.get_54_text()
 
@@ -34,11 +35,11 @@ if __name__ == '__main__':
         CT_numbers = hpf.totient_shift(CT_numbers, use_primes, add_shift)
 
     quadgrams, probabilities = hpf.read_data_from_file("new_quadgrams.txt")
-
     if reverse_gematria:
         reverse_quadgrams = np.copy(quadgrams)
         for index in range(29):
             reverse_quadgrams[quadgrams == index] = 28 - index
+        quadgrams = reverse_quadgrams.copy()
 
     for index in range(pow(2, number_of_interrupters)):
         my_dude = np.copy(CT_interrupters)
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
     for counting in range(pow(2, number_of_interrupters)):
         pool.apply_async(hpf.finding_keys,
-                         args=(counting, interrupters, CT_numbers, probabilities, autokey, reversed_text),
+                         args=(counting, interrupters, CT_numbers, probabilities, algorithm, reversed_text, reverse_gematria),
                          callback=collect_results)
 
     pool.close()

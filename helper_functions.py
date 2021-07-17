@@ -58,7 +58,7 @@ def totient_shift(CT_numbers, use_primes, add_shift):
     if add_shift and use_primes:
         for index in range(len(CT_numbers)):
             CT_numbers[index] += totient(primes[index])
-    if not (add_shift) and use_primes:
+    if not add_shift and use_primes:
         for index in range(len(CT_numbers)):
             CT_numbers[index] -= totient(primes[index])
     if add_shift and not use_primes:
@@ -132,12 +132,18 @@ def decryption_vigenere(key, CT_numbers, current_interrupter):
     return MT
 
 
-def calculate_fitness(childkey, CT_numbers, probabilities, autokey, current_interrupter, reversed_text):
-    if autokey:
-        MT = decryption_autokey(childkey, CT_numbers, current_interrupter)
-    else:
-        MT = decryption_vigenere(childkey, CT_numbers, current_interrupter)
+def decryption_autokey_ciphertext(childkey, CT_numbers, current_interrupter):
+    key_text = np.concatenate((childkey, CT_numbers[0:(len(CT_numbers) - len(childkey))]))
+    return np.subtract(CT_numbers, key_text) % 29
 
+
+def calculate_fitness(childkey, CT_numbers, probabilities, algorithm, current_interrupter, reversed_text):
+    if algorithm == 0:
+        MT = decryption_vigenere(childkey, CT_numbers, current_interrupter)
+    if algorithm == 1:
+        MT = decryption_autokey(childkey, CT_numbers, current_interrupter)
+    if algorithm == 2:
+        MT = decryption_autokey_ciphertext(childkey, CT_numbers, current_interrupter)
     if reversed_text:
         MT = MT[::-1]
 
@@ -148,23 +154,36 @@ def calculate_fitness(childkey, CT_numbers, probabilities, autokey, current_inte
     return np.sum(probabilities[indices])
 
 
-def translate_to_english(parent_key):
+def translate_to_english(parent_key, reverse_gematria):
     dic = ["F", "U", "TH", "O", "R", "C", "G", "W", "H", "N", "I", "J", "EO", "P", "X", "S", "T", "B", "E", "M", "L",
            "ING", "OE", "D", "A", "AE", "Y", "IA", "EA"]
+    if reverse_gematria:
+        dic.reverse()
     translation = ""
     for index in parent_key:
         translation += dic[index]
     return translation
 
 
-def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey, reversed_text):
+def translate_best_text(algorithm, best_key_ever, CT_numbers, current_interrupter, reverse_gematria):
+    if algorithm == 0:
+        return translate_to_english(decryption_vigenere(best_key_ever, CT_numbers, current_interrupter), reverse_gematria)
+    if algorithm == 1:
+        return translate_to_english(decryption_autokey(best_key_ever, CT_numbers, current_interrupter), reverse_gematria)
+    if algorithm == 2:
+        return translate_to_english(decryption_autokey_ciphertext(best_key_ever, CT_numbers, current_interrupter), reverse_gematria)
+    else:
+        print('Invlaid algorithm ID')
+
+
+def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey_ID, reversed_text, reverse_gematria):
     current_interrupter = interrupters[counting]
     best_score_ever = -100000.0
     best_key_ever = []
-    for key_length in range(51, 101):
+    for key_length in range(1, 16):
         parent_key = np.random.randint(28, size=key_length)
         parent_key[0] = 0
-        parent_score = calculate_fitness(parent_key, CT_numbers, probabilities, autokey,
+        parent_score = calculate_fitness(parent_key, CT_numbers, probabilities, autokey_ID,
                                          current_interrupter, reversed_text)
 
         still_improving = True
@@ -183,7 +202,7 @@ def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey, rev
 
                 for k in range(0, 29):
                     scores[k] = calculate_fitness(childkey[k, :], CT_numbers, probabilities,
-                                                  autokey, current_interrupter, reversed_text)
+                                                  autokey_ID, current_interrupter, reversed_text)
 
                 best_children_score = np.max(scores)
 
@@ -199,5 +218,5 @@ def finding_keys(counting, interrupters, CT_numbers, probabilities, autokey, rev
                 still_improving = False
     print(counting)
     return (best_score_ever, len(best_key_ever),
-            translate_to_english(decryption_vigenere(best_key_ever, CT_numbers, current_interrupter)), best_key_ever,
-            translate_to_english(best_key_ever))
+            translate_best_text(autokey_ID, best_key_ever, CT_numbers, current_interrupter, reverse_gematria), best_key_ever,
+            translate_to_english(best_key_ever, reverse_gematria))
