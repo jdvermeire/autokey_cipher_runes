@@ -13,18 +13,13 @@ def collect_results(result):
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
-    # Vigenere, Autokey, Autokey Ciphertext
-    algorithm = 1
+    algorithm = 1  # 0 Vigenere, 1 Autokey, 2 Autokey Ciphertext
+    shift_id = 5  # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
     reversed_text = False
-    totient_shift = False
-    prime_shift = True
-    add_shift = False
-    index_shift=False
     reverse_gematria = True
+    interrupter = 0
 
     CT_numbers = lp_text.get_hollow_text()
-
-    interrupter = 0
     CT_interrupters = np.int8((CT_numbers == interrupter))
     number_of_interrupters = sum(CT_interrupters)
     interrupters = np.zeros((pow(2, number_of_interrupters), len(CT_numbers)), dtype=np.uint8)
@@ -32,15 +27,12 @@ if __name__ == '__main__':
     if reversed_text:
         CT_numbers = CT_numbers[::-1]
 
-    if totient_shift or prime_shift or index_shift:
-        CT_numbers = hpf.apply_shift(CT_numbers, prime_shift, totient_shift, index_shift, add_shift)
+    if shift_id > 0:
+        CT_numbers = hpf.apply_shift(CT_numbers, shift_id)
 
-    quadgrams, probabilities = hpf.read_data_from_file("new_quadgrams.txt")
+    probabilities = hpf.read_data_from_file("new_quadgrams.txt")
     if reverse_gematria:
-        reverse_quadgrams = np.copy(quadgrams)
-        for index in range(29):
-            reverse_quadgrams[quadgrams == index] = 28 - index
-        quadgrams = reverse_quadgrams.copy()
+        probabilities = probabilities[::-1]
 
     for index in range(pow(2, number_of_interrupters)):
         my_dude = np.copy(CT_interrupters)

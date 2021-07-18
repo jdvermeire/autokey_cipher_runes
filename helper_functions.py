@@ -3,28 +3,25 @@ from sympy.ntheory.factor_ import totient
 from sympy import prime
 
 
-def apply_shift(ct_numbers, prime_shift, totient_shift, index_shift, add_shift):
-    if totient_shift:
-        if add_shift:
-            for index in range(len(ct_numbers)):
-                ct_numbers[index] += totient(prime(index+1))
-        else:
-            for index in range(len(ct_numbers)):
-                ct_numbers[index] -= totient(prime(index+1))
-    if prime_shift:
-        if add_shift:
-            for index in range(len(ct_numbers)):
-                ct_numbers[index] += prime(index+1)
-        else:
-            for index in range(len(ct_numbers)):
-                ct_numbers[index] -= prime(index+1)
-    if index_shift:
-        if add_shift:
-            for index in range(len(ct_numbers)):
-                ct_numbers[index] += index
-        else:
-            for index in range(len(ct_numbers)):
-                ct_numbers[index] -= index
+def apply_shift(ct_numbers, shift_id):
+    if shift_id == 1:
+        for index in range(len(ct_numbers)):
+            ct_numbers[index] += totient(prime(index + 1))
+    if shift_id == 2:
+        for index in range(len(ct_numbers)):
+            ct_numbers[index] -= totient(prime(index + 1))
+    if shift_id == 3:
+        for index in range(len(ct_numbers)):
+            ct_numbers[index] += prime(index + 1)
+    if shift_id == 4:
+        for index in range(len(ct_numbers)):
+            ct_numbers[index] -= prime(index + 1)
+    if shift_id == 5:
+        for index in range(len(ct_numbers)):
+            ct_numbers[index] += index
+    if shift_id == 6:
+        for index in range(len(ct_numbers)):
+            ct_numbers[index] -= index
     return np.remainder(ct_numbers, 29)
 
 
@@ -43,13 +40,13 @@ def read_data_from_file(file_name):
     s = open(file_name, "r")
     lines = s.readlines()
 
-    ints = np.asarray(([line.split(',')[0:4] for line in lines]), dtype=int, order='C')
+    # ints = np.asarray(([line.split(',')[0:4] for line in lines]), dtype=int, order='C')
     probabilities = [line.split(',')[4] for line in lines]
     for index in range(len(probabilities)):
         probabilities[index] = float(probabilities[index].replace('\n', ''))
     probabilities = np.array(probabilities)
     s.close()
-    return ints, probabilities
+    return probabilities
 
 
 def decryption_autokey(key, ct_numbers, current_interrupter):
@@ -90,7 +87,7 @@ def decryption_vigenere(key, ct_numbers, current_interrupter):
     return mt
 
 
-def decryption_autokey_ciphertext(childkey, ct_numbers, current_interrupter):
+def decryption_autokey_ciphertext(childkey, ct_numbers):
     key_text = np.concatenate((childkey, ct_numbers[0:(len(ct_numbers) - len(childkey))]))
     return np.subtract(ct_numbers, key_text) % 29
 
@@ -102,13 +99,11 @@ def calculate_fitness(childkey, ct_numbers, probabilities, algorithm, current_in
     if algorithm == 1:
         mt = decryption_autokey(childkey, ct_numbers, current_interrupter)
     if algorithm == 2:
-        mt = decryption_autokey_ciphertext(childkey, ct_numbers, current_interrupter)
+        mt = decryption_autokey_ciphertext(childkey, ct_numbers)
     if mt is None:
         raise AssertionError()
-
     if reversed_text:
         mt = mt[::-1]
-
     indices = np.zeros(((len(mt) - 3),), dtype=int)
     for k in range(len(mt) - 3):
         indices[k] = mt[k] * (29 ** 3) + mt[k + 1] * (29 ** 2) + mt[k + 2] * 29 + mt[k + 3]
@@ -133,7 +128,7 @@ def translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupte
     if algorithm == 1:
         return translate_to_english(decryption_autokey(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
     if algorithm == 2:
-        return translate_to_english(decryption_autokey_ciphertext(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
+        return translate_to_english(decryption_autokey_ciphertext(best_key_ever, ct_numbers), reverse_gematria)
     else:
         print('Invlaid algorithm ID')
 
