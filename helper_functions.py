@@ -165,6 +165,6 @@ def finding_keys(counting, ct_numbers, ct_interrupters, number_of_interrupters, 
             else:
                 still_improving = False
     print(counting)
-    return (best_score_ever, len(best_key_ever),
+    return (best_score_ever, best_key_ever.shape[1],
             translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupter, reverse_gematria), best_key_ever,
             translate_to_english(best_key_ever, reverse_gematria))
