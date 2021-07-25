@@ -13,38 +13,32 @@ def collect_results(result):
 if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
-    algorithm = 1  # 0 Vigenere, 1 Autokey, 2 Autokey Ciphertext
-    shift_id = 5  # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
-    reversed_text = False
+    algorithm = 1  # Vigenere, Autokey
+    shift_id = 6 # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
+    reversed_text = True
     reverse_gematria = True
     interrupter = 0
 
-    CT_numbers = lp_text.get_hollow_text()
-    CT_interrupters = np.int8((CT_numbers == interrupter))
-    number_of_interrupters = sum(CT_interrupters)
-    interrupters = np.zeros((pow(2, number_of_interrupters), len(CT_numbers)), dtype=np.uint8)
+    ct_numbers = lp_text.get_hollow_text()
+    ct_interrupters = np.int8((ct_numbers == interrupter))
+    number_of_interrupters = sum(ct_interrupters)
 
     if reversed_text:
-        CT_numbers = CT_numbers[::-1]
+        ct_numbers = ct_numbers[::-1]
 
     if shift_id > 0:
-        CT_numbers = hpf.apply_shift(CT_numbers, shift_id)
+        ct_numbers = hpf.apply_shift(ct_numbers, shift_id)
 
     probabilities = hpf.read_data_from_file("new_quadgrams.txt")
     if reverse_gematria:
         probabilities = probabilities[::-1]
 
-    for index in range(pow(2, number_of_interrupters)):
-        my_dude = np.copy(CT_interrupters)
-        bit_rep = bin(int(index))[2:].zfill(number_of_interrupters)
-        my_dude[my_dude == 1] = np.array(list(bit_rep))
-        interrupters[index] = my_dude
-
     best_keys = hpf.BestKeyStorage()
 
     for counting in range(pow(2, number_of_interrupters)):
         pool.apply_async(hpf.finding_keys,
-                         args=(counting, interrupters, CT_numbers, probabilities, algorithm, reversed_text, reverse_gematria),
+                         args=(counting, ct_numbers, ct_interrupters, number_of_interrupters, probabilities, algorithm, reversed_text,
+                               reverse_gematria),
                          callback=collect_results)
 
     pool.close()
