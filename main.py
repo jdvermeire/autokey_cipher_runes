@@ -14,7 +14,7 @@ if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
     algorithm = 1  # Vigenere, Autokey
-    shift_id = 6 # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
+    shift_id = 6  # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
     reversed_text = True
     reverse_gematria = True
     interrupter = 0
