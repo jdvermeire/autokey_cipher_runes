@@ -290,19 +290,19 @@ def apply_shift(ct_numbers: npt.ArrayLike, shift_id: npt.ArrayLike) -> np.ndarra
     if shift_id == 1:
         for index in range(len(ct_numbers)):
             ct_numbers[index] += prime[index + 1] - 1
-    if shift_id == 2:
+    elif shift_id == 2:
         for index in range(len(ct_numbers)):
             ct_numbers[index] -= prime[index + 1] - 1
-    if shift_id == 3:
+    elif shift_id == 3:
         for index in range(len(ct_numbers)):
             ct_numbers[index] += prime[index + 1]
-    if shift_id == 4:
+    elif shift_id == 4:
         for index in range(len(ct_numbers)):
             ct_numbers[index] -= prime[index + 1]
-    if shift_id == 5:
+    elif shift_id == 5:
         for index in range(len(ct_numbers)):
             ct_numbers[index] += index
-    if shift_id == 6:
+    elif shift_id == 6:
         for index in range(len(ct_numbers)):
             ct_numbers[index] -= index
     return np.remainder(ct_numbers, 29)
@@ -335,20 +335,15 @@ def decryption_autokey(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_i
     counter = 0
     index = 0
     key_shape = keys.shape
-    key_length = key_shape[1]
     mt = np.tile(ct_numbers, (key_shape[0], 1))
 
-    if np.sum(current_interrupter[0:key_length]) == 0:
-        mt[:, 0:key_length] = (mt[:, 0:key_length] + keys) % 29
-        index = key_length
-    else:
-        while counter < keys.shape[1]:
-            if current_interrupter[index] == 1:
-                index += 1
-                continue
-            mt[:, index] = (mt[:, index] + keys[:, counter]) % 29
+    while counter < keys.shape[1]:
+        if current_interrupter[index] == 1:
             index += 1
-            counter += 1
+            continue
+        mt[:, index] = (mt[:, index] + keys[:, counter]) % 29
+        index += 1
+        counter += 1
 
     position = 0
     for i in range(index, len(ct_numbers)):
@@ -377,12 +372,11 @@ def decryption_vigenere(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_
 
 def calculate_fitness(childkey: npt.ArrayLike, ct_numbers: npt.ArrayLike, probabilities: npt.ArrayLike, algorithm: int,
                       current_interrupter: npt.ArrayLike, reversed_text: bool) -> np.ndarray:
-    mt = None
     if algorithm == 0:
         mt = decryption_vigenere(childkey, ct_numbers, current_interrupter)
-    if algorithm == 1:
+    elif algorithm == 1:
         mt = decryption_autokey(childkey, ct_numbers, current_interrupter)
-    if mt is None:
+    else:
         raise AssertionError()
 
     if reversed_text:
