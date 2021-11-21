@@ -320,14 +320,14 @@ class BestKeyStorage:
 
 
 def read_data_from_file(file_name: str) -> np.ndarray:
-    s = open(file_name, "r")
-    lines = s.readlines()
+    with open(file_name) as f:
+        lines = f.readlines()
 
-    probabilities = [line.split(',')[4] for line in lines]
-    for index in range(len(probabilities)):
-        probabilities[index] = float(probabilities[index].replace('\n', ''))
-    probabilities = np.array(probabilities)
-    s.close()
+    results = [line.split(',')[4] for line in lines]
+    probabilities = np.zeros(len(results), dtype=float)
+    for index, item in enumerate(results):
+        probabilities[index] = float(item.replace('\n', ''))
+
     return probabilities
 
 
@@ -336,7 +336,7 @@ def decryption_autokey(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_i
     index = 0
     key_shape = keys.shape
     key_length = key_shape[1]
-    mt = np.repeat(ct_numbers[None], key_shape[0], axis=0)
+    mt = np.tile(ct_numbers, (key_shape[0], 1))
 
     if np.sum(current_interrupter[0:key_length]) == 0:
         mt[:, 0:key_length] = (mt[:, 0:key_length] + keys) % 29
@@ -364,7 +364,7 @@ def decryption_vigenere(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_
     counter = 0
     key_shape = keys.shape
     key_length = key_shape[1]
-    mt = np.repeat(ct_numbers[None], key_shape[0], axis=0)
+    mt = np.tile(ct_numbers, (key_shape[0], 1))
 
     for index in range(len(ct_numbers)):
         if current_interrupter[index]:
@@ -391,7 +391,7 @@ def calculate_fitness(childkey: npt.ArrayLike, ct_numbers: npt.ArrayLike, probab
     len_ciphertext = mt.shape[1]
     indices = np.array(
         [mt[:, 0:len_ciphertext - 3] * 24389, mt[:, 1:len_ciphertext - 2] * 841, mt[:, 2:len_ciphertext - 1] * 29, mt[:, 3:len_ciphertext]])
-    score = np.sum(probabilities[int(np.sum(indices, axis=0))], axis=1)
+    score = np.sum(probabilities[np.sum(indices, axis=0)], axis=1)
     return score
 
 
