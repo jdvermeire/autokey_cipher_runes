@@ -14,9 +14,9 @@ if __name__ == '__main__':
     pool = mp.Pool(mp.cpu_count())
     start = timeit.default_timer()
     algorithm = 1  # Vigenere, Autokey
-    shift_id = 6  # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
-    reversed_text = True
-    reverse_gematria = True
+    shift_id = 0  # 0 Without #1 +Totient shift, #2 -Totient shift, #3 +prime shift, #4 -prime shift, #5 +index shift, #6 -index shift
+    reversed_text = False
+    reverse_gematria = False
     interrupter = 0
 
     ct_numbers = lp_text.get_hollow_text()
@@ -52,11 +52,3 @@ if __name__ == '__main__':
     stop = timeit.default_timer()
 
     print('Time: ', stop - start)
-
-# if __name__ == '__main__':
-#    profiler = cProfile.Profile()
-#    profiler.enable()
-#    main()
-#    profiler.disable()
-#    stats = pstats.Stats(profiler).sort_stats('tottime')
-#    stats.print_stats()
