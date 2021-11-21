@@ -415,7 +415,7 @@ def finding_keys(counting: int, ct_numbers: npt.ArrayLike, ct_interrupters: npt.
                  float, int, str, np.ndarray, str]:
     current_interrupter = np.copy(ct_interrupters)
     bit_rep = bin(int(counting))[2:].zfill(number_of_interrupters)
-    current_interrupter[ct_interrupters == 1] = np.array(list(bit_rep))
+    current_interrupter[ct_interrupters == 1] = np.array(list(map(int, bit_rep)))
     best_score_ever = -1000000.0
     best_key_ever = np.empty(1)
     for key_length in range(1, 20):
