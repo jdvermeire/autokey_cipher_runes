@@ -407,7 +407,7 @@ def translate_best_text(algorithm: int, best_key_ever: npt.ArrayLike, ct_numbers
     if algorithm == 1:
         return translate_to_english(decryption_autokey(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
     else:
-        print('Invlaid algorithm ID')
+        print('Invalid algorithm ID')
 
 
 def finding_keys(counting: int, ct_numbers: npt.ArrayLike, ct_interrupters: npt.ArrayLike, number_of_interrupters: int,
