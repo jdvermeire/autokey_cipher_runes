@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 
 prime = np.array(
     [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139,
@@ -285,7 +286,7 @@ prime = np.array(
      57301, 57329, 57331, 57347, 57349, 57367, 57373, 57383, 57389, 57397, 57413, 57427, 57457, 57467, 57487, 57493, 57503, 57527, 57529])
 
 
-def apply_shift(ct_numbers, shift_id):
+def apply_shift(ct_numbers: npt.ArrayLike, shift_id: npt.ArrayLike) -> np.ndarray:
     if shift_id == 1:
         for index in range(len(ct_numbers)):
             ct_numbers[index] += prime[index + 1] - 1
@@ -318,7 +319,7 @@ class BestKeyStorage:
         self.store = self.store[:self.N]
 
 
-def read_data_from_file(file_name):
+def read_data_from_file(file_name: str) -> np.ndarray:
     s = open(file_name, "r")
     lines = s.readlines()
 
@@ -330,12 +331,12 @@ def read_data_from_file(file_name):
     return probabilities
 
 
-def decryption_autokey(keys, ct_numbers, current_interrupter):
+def decryption_autokey(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_interrupter: npt.ArrayLike) -> np.ndarray:
     counter = 0
     index = 0
     key_shape = keys.shape
     key_length = key_shape[1]
-    mt = np.repeat(ct_numbers[None], key_shape[0], axis=0)
+    mt = np.repeat(ct_numbers, key_shape[0], axis=0)
 
     if np.sum(current_interrupter[0:key_length]) == 0:
         mt[:, 0:key_length] = (mt[:, 0:key_length] + keys) % 29
@@ -359,7 +360,7 @@ def decryption_autokey(keys, ct_numbers, current_interrupter):
     return mt
 
 
-def decryption_vigenere(keys, ct_numbers, current_interrupter):
+def decryption_vigenere(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_interrupter: npt.ArrayLike) -> np.ndarray:
     counter = 0
     key_shape = keys.shape
     key_length = key_shape[1]
@@ -374,7 +375,8 @@ def decryption_vigenere(keys, ct_numbers, current_interrupter):
     return mt
 
 
-def calculate_fitness(childkey, ct_numbers, probabilities, algorithm, current_interrupter, reversed_text):
+def calculate_fitness(childkey: npt.ArrayLike, ct_numbers: npt.ArrayLike, probabilities: npt.ArrayLike, algorithm: int,
+                      current_interrupter: npt.ArrayLike, reversed_text: bool) -> np.ndarray:
     mt = None
     if algorithm == 0:
         mt = decryption_vigenere(childkey, ct_numbers, current_interrupter)
@@ -393,7 +395,7 @@ def calculate_fitness(childkey, ct_numbers, probabilities, algorithm, current_in
     return score
 
 
-def translate_to_english(parent_key, reverse_gematria):
+def translate_to_english(parent_key: npt.ArrayLike, reverse_gematria: bool) -> str:
     dic = ["F", "U", "TH", "O", "R", "C", "G", "W", "H", "N", "I", "J", "EO", "P", "X", "S", "T", "B", "E", "M", "L",
            "ING", "OE", "D", "A", "AE", "Y", "IA", "EA"]
     if reverse_gematria:
@@ -404,7 +406,8 @@ def translate_to_english(parent_key, reverse_gematria):
     return translation
 
 
-def translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupter, reverse_gematria):
+def translate_best_text(algorithm: int, best_key_ever: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_interrupter: npt.ArrayLike,
+                        reverse_gematria: bool) -> str:
     if algorithm == 0:
         return translate_to_english(decryption_vigenere(best_key_ever, ct_numbers, current_interrupter), reverse_gematria)
     if algorithm == 1:
@@ -413,12 +416,14 @@ def translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupte
         print('Invlaid algorithm ID')
 
 
-def finding_keys(counting, ct_numbers, ct_interrupters, number_of_interrupters, probabilities, algorithm, reversed_text, reverse_gematria):
+def finding_keys(counting: int, ct_numbers: npt.ArrayLike, ct_interrupters: npt.ArrayLike, number_of_interrupters: int,
+                 probabilities: npt.ArrayLike, algorithm: int, reversed_text: bool, reverse_gematria: bool) -> tuple[
+                 float, int, str, np.ndarray, str]:
     current_interrupter = np.copy(ct_interrupters)
     bit_rep = bin(int(counting))[2:].zfill(number_of_interrupters)
     current_interrupter[ct_interrupters == 1] = np.array(list(bit_rep))
     best_score_ever = -1000000.0
-    best_key_ever = []
+    best_key_ever = np.empty(1)
     for key_length in range(1, 20):
         parent_key = np.random.randint(28, size=(1, key_length))
         parent_score = calculate_fitness(parent_key, ct_numbers, probabilities, algorithm, current_interrupter, reversed_text)
@@ -446,6 +451,8 @@ def finding_keys(counting, ct_numbers, ct_interrupters, number_of_interrupters, 
             else:
                 still_improving = False
     print(counting)
-    return (best_score_ever, best_key_ever.shape[1],
-            translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupter, reverse_gematria), best_key_ever,
-            translate_to_english(best_key_ever, reverse_gematria))
+
+    length_of_best_key = int(best_key_ever.shape[1])
+    best_text = translate_best_text(algorithm, best_key_ever, ct_numbers, current_interrupter, reverse_gematria)
+    translated_key = translate_to_english(best_key_ever, reverse_gematria)
+    return best_score_ever, length_of_best_key, best_text, best_key_ever, translated_key
