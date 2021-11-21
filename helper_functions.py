@@ -336,7 +336,7 @@ def decryption_autokey(keys: npt.ArrayLike, ct_numbers: npt.ArrayLike, current_i
     index = 0
     key_shape = keys.shape
     key_length = key_shape[1]
-    mt = np.repeat(ct_numbers, key_shape[0], axis=0)
+    mt = np.repeat(ct_numbers[None], key_shape[0], axis=0)
 
     if np.sum(current_interrupter[0:key_length]) == 0:
         mt[:, 0:key_length] = (mt[:, 0:key_length] + keys) % 29
@@ -391,7 +391,7 @@ def calculate_fitness(childkey: npt.ArrayLike, ct_numbers: npt.ArrayLike, probab
     len_ciphertext = mt.shape[1]
     indices = np.array(
         [mt[:, 0:len_ciphertext - 3] * 24389, mt[:, 1:len_ciphertext - 2] * 841, mt[:, 2:len_ciphertext - 1] * 29, mt[:, 3:len_ciphertext]])
-    score = np.sum(probabilities[np.sum(indices, axis=0)], axis=1)
+    score = np.sum(probabilities[int(np.sum(indices, axis=0))], axis=1)
     return score
 
 
